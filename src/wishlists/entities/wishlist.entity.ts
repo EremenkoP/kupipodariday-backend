@@ -2,8 +2,9 @@ import { IsUrl, Length } from 'class-validator';
 import { User } from 'src/users/entities/user.entity';
 import { PrimaryEntities } from 'src/utils/entities/primaryEntities';
 import { Wish } from 'src/wishes/entities/wish.entity';
-import { Column, JoinTable, ManyToMany, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinTable, ManyToMany, ManyToOne } from 'typeorm';
 
+@Entity()
 export class Wishlist extends PrimaryEntities {
   @Column()
   @Length(1, 250)

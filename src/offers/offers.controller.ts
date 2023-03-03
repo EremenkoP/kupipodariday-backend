@@ -15,6 +15,7 @@ import { UpdateOfferDto } from './dto/update-offer.dto';
 export class OffersController {
   constructor(private readonly offersService: OffersService) {}
 
+  // CRUD из ТЗ
   @Post()
   create(@Body() createOfferDto: CreateOfferDto) {
     return this.offersService.create(createOfferDto);
@@ -39,4 +40,6 @@ export class OffersController {
   remove(@Param('id') id: string) {
     return this.offersService.remove(+id);
   }
+
+  // CRUD из Swagger
 }

@@ -1,15 +1,44 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserPublicProfileResponse } from './dto/userProfileResponse.dto';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  constructor(
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+  ) {}
+
+  async removeById(id: number) {
+    return await this.userRepository.delete({ id });
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async findById(id: number): Promise<UserPublicProfileResponse> {
+    const user = await this.userRepository.findOneBy({ id });
+    if (!user) throw new NotFoundException('Пользователь не найден');
+    return user;
+  }
+
+  async create(createUserDto: CreateUserDto) {
+    const hash = await bcrypt.hash(createUserDto.password, 10);
+    const createdUser = this.userRepository.create({
+      ...createUserDto,
+      password: hash,
+    });
+    return this.userRepository.save(createdUser);
+  }
+
+  async findAll(): Promise<User[]> {
+    return this.userRepository.find();
+  }
+
+  async findByName(username: string) {
+    return await this.userRepository.findOneBy({ username });
   }
 
   findOne(id: number) {
@@ -20,7 +49,16 @@ export class UsersService {
     return `This action updates a #${id} user`;
   }
 
-  remove(id: number) {
+  async remove(id: number) {
+    const user = this.findById(id);
     return `This action removes a #${id} user`;
+  }
+
+  async findMany({ query }) {
+    const users = await this.userRepository.find({
+      where: [{ email: query }, { username: query }],
+    });
+    users.forEach((item) => delete item.password);
+    return users;
   }
 }

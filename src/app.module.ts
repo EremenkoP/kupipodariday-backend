@@ -10,6 +10,7 @@ import { Wish } from './wishes/entities/wish.entity';
 import { Wishlist } from './wishlists/entities/wishlist.entity';
 import { Offer } from './offers/entities/offer.entity';
 import { PrimaryEntities } from './utils/entities/primaryEntities';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { PrimaryEntities } from './utils/entities/primaryEntities';
       entities: [User, Wish, Wishlist, Offer, PrimaryEntities],
       synchronize: true,
     }),
+    AuthModule,
     UsersModule,
     WishesModule,
     WishlistsModule,

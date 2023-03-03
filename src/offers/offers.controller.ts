@@ -6,40 +6,34 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
+  NotFoundException,
+  ParseIntPipe,
+  Req,
 } from '@nestjs/common';
 import { OffersService } from './offers.service';
 import { CreateOfferDto } from './dto/create-offer.dto';
-import { UpdateOfferDto } from './dto/update-offer.dto';
+import { JwtAuthGuard } from 'src/auth/jwtAuth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('offers')
 export class OffersController {
-  constructor(private readonly offersService: OffersService) {}
-
-  // CRUD из ТЗ
-  @Post()
-  create(@Body() createOfferDto: CreateOfferDto) {
-    return this.offersService.create(createOfferDto);
-  }
+  constructor(private offersService: OffersService) {}
 
   @Get()
-  findAll() {
-    return this.offersService.findAll();
+  async findAll() {
+    const offers = await this.offersService.findAll();
+    if (!offers) throw new NotFoundException('Список подарков не найден');
+    return offers;
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.offersService.findOne(+id);
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    return await this.offersService.findById(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOfferDto: UpdateOfferDto) {
-    return this.offersService.update(+id, updateOfferDto);
+  @Post()
+  async create(@Req() req, @Body() createOfferDto: CreateOfferDto) {
+    return await this.offersService.create(req.user, createOfferDto);
   }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.offersService.remove(+id);
-  }
-
-  // CRUD из Swagger
 }

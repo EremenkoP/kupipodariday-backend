@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { User } from 'src/users/entities/user.entity';
+import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 import { CreateWishDto } from './dto/create-wish.dto';
 import { UpdateWishDto } from './dto/update-wish.dto';
 import { Wish } from './entities/wish.entity';
@@ -11,28 +12,73 @@ export class WishesService {
     @InjectRepository(Wish)
     private wishRepository: Repository<Wish>,
   ) {}
-  create(createWishDto: CreateWishDto) {
-    return 'This action adds a new wish';
+
+  async findAll() {
+    return this.wishRepository.find();
   }
 
-  findAll() {
-    return `This action returns all wishes`;
+  async create(user: User, createDto: CreateWishDto): Promise<Wish> {
+    return this.wishRepository.save({
+      owner: user,
+      ...createDto,
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} wish`;
+  async findLast(): Promise<Wish[]> {
+    return this.wishRepository.find({
+      take: 40,
+      order: { createdAt: 'DESC' },
+      relations: {
+        owner: true,
+        offers: true,
+      },
+    });
   }
 
-  update(id: number, updateWishDto: UpdateWishDto) {
-    return `This action updates a #${id} wish`;
+  async findTop(): Promise<Wish[]> {
+    return this.wishRepository.find({
+      // чек лист 10
+      take: 10,
+      order: { copied: 'DESC' },
+      relations: {
+        owner: true,
+        offers: true,
+      },
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} wish`;
+  async findById(id: number) {
+    return this.wishRepository.findOne({
+      where: { id },
+      relations: {
+        owner: true,
+        offers: true,
+      },
+    });
+  }
+
+  async removeById(id: number) {
+    return this.wishRepository.delete({ id });
+  }
+
+  async update(id: number, updateDto: UpdateWishDto) {
+    await this.wishRepository.update(
+      { id },
+      { ...updateDto, updatedAt: new Date() },
+    );
+    return {};
+  }
+
+  async findMany(item: FindManyOptions<Wish>) {
+    return this.wishRepository.find(item);
   }
 
   async findWishes(id: number) {
     const user = await this.wishRepository.find({ where: { id } });
     return user;
+  }
+
+  findOne(query: FindOneOptions<Wish>) {
+    return this.wishRepository.findOne(query);
   }
 }

@@ -21,7 +21,9 @@ export class UsersService {
   async findById(id: number): Promise<UserPublicProfileResponse> {
     const user = await this.userRepository.findOneBy({ id });
     if (!user) throw new NotFoundException('Пользователь не найден');
-    return user;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...result } = user;
+    return result;
   }
 
   async create(createUserDto: CreateUserDto) {

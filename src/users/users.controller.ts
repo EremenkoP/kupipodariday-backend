@@ -25,32 +25,6 @@ export class UsersController {
     private readonly wishesService: WishesService,
   ) {}
 
-  // CRUD из ТЗ
-  @Post()
-  async create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
-  }
-
-  @Get()
-  async findAll() {
-    return this.usersService.findAll();
-  }
-
-  @Get(':id')
-  async findOne(@Param('id') id: string): Promise<UserPublicProfileResponse> {
-    return await this.usersService.findById(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
-  }
-
   // CRUD из Swagger
   @Get('me')
   async me(@Req() req): Promise<UserPublicProfileResponse> {
@@ -96,5 +70,26 @@ export class UsersController {
   @Post('find')
   async findMany(@Body() user) {
     return this.usersService.findMany(user);
+  }
+
+  // CRUD из ТЗ
+  @Post()
+  async create(@Body() createUserDto: CreateUserDto) {
+    return this.usersService.create(createUserDto);
+  }
+
+  @Get()
+  async findAll() {
+    return this.usersService.findAll();
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    return this.usersService.update(+id, updateUserDto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.usersService.remove(+id);
   }
 }

@@ -35,6 +35,6 @@ export class Wish extends PrimaryEntities {
   @OneToMany(() => Offer, (Offer) => Offer.item)
   offers: Offer[];
 
-  @Column()
+  @Column({ nullable: true })
   copied: number;
 }

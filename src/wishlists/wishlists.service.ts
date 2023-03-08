@@ -64,7 +64,7 @@ export class WishlistsService {
     });
   }
 
-  async removeById(id: number): Promise<any> {
+  async removeById(id: number) {
     return this.wishlistRepository.delete({ id });
   }
 }

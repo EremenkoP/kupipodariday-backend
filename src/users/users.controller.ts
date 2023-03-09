@@ -41,7 +41,7 @@ export class UsersController {
 
     if (!user) throw new NotFoundException('Пользователь не найден');
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { id, createdAt, updatedAt, ...result } = user;
+    const { id, createdAt, updatedAt, password, ...result } = user;
     return result;
   }
 
@@ -84,12 +84,13 @@ export class UsersController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
-  }
+  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    const result = await this.usersService.update(+id, updateUserDto);
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+    if (result) {
+      return await this.usersService.findById(+id);
+    } else {
+      throw new NotFoundException();
+    }
   }
 }

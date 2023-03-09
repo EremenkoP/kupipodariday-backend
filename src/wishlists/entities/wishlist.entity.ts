@@ -1,4 +1,4 @@
-import { IsUrl, Length } from 'class-validator';
+import { IsUrl, Length, MaxLength } from 'class-validator';
 import { User } from 'src/users/entities/user.entity';
 import { PrimaryEntities } from 'src/utils/entities/primaryEntities';
 import { Wish } from 'src/wishes/entities/wish.entity';
@@ -10,8 +10,8 @@ export class Wishlist extends PrimaryEntities {
   @Length(1, 250)
   name: string;
 
-  @Column()
-  @Length(0, 1500)
+  @Column({ nullable: true })
+  @MaxLength(1500)
   description: string;
 
   @Column()

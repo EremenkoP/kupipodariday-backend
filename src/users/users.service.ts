@@ -1,6 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOneOptions, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -43,17 +47,36 @@ export class UsersService {
     return await this.userRepository.findOneBy({ username });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(query: FindOneOptions<User>): Promise<User> {
+    return await this.userRepository.findOne(query);
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
+  async update(id: number, updateUserDto: UpdateUserDto) {
+    const { username, email } = updateUserDto;
+    const isExist = (await this.findOne({
+      where: [{ email }, { username }],
+    }))
+      ? false
+      : true;
+    if (isExist)
+      throw new ConflictException(
+        'Пользователь с таким email или username не существует',
+      );
 
-  async remove(id: number) {
-    const user = this.findById(id);
-    return `This action removes a #${id} user`;
+    const user = await this.userRepository.findOneBy({ id });
+    if (!user) throw new NotFoundException('Пользователь не найден');
+
+    let password: string;
+    if (updateUserDto.password) {
+      password = await bcrypt.hash(updateUserDto.password, 10);
+    } else {
+      password = user.password;
+    }
+
+    return this.userRepository.update(id, {
+      ...updateUserDto,
+      password,
+    });
   }
 
   async findMany({ query }) {

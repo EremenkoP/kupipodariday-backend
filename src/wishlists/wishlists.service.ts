@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { WishesService } from 'src/wishes/wishes.service';
@@ -65,6 +65,11 @@ export class WishlistsService {
   }
 
   async removeById(id: number) {
-    return this.wishlistRepository.delete({ id });
+    const { affected } = await this.wishlistRepository.delete({ id });
+    if (affected === 1) {
+      return this.findAll();
+    } else {
+      throw new ConflictException('При удалении что то пошло не так...');
+    }
   }
 }

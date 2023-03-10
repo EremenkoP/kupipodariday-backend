@@ -12,9 +12,8 @@ export class AuthService {
   ) {}
 
   async validateUser(username: string, password: string): Promise<any> {
-    const user = await this.usersService.findByName(username);
+    const user = await this.usersService.findByName(username, true);
     if (!user) throw new NotFoundException('Пользователь не найден');
-
     const passIsMatch = await bcrypt.compare(password, user.password);
     if (user && passIsMatch) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -29,7 +28,7 @@ export class AuthService {
     return {
       access_token: this.jwtService.sign(payload, {
         secret: process.env.SECRET_KEY || 'secretkey',
-        expiresIn: '7d',
+        expiresIn: process.env.TIME_TOKEN || '3d',
       }),
     };
   }

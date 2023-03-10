@@ -22,12 +22,20 @@ export class UsersService {
     return await this.userRepository.delete({ id });
   }
 
-  async findById(id: number): Promise<UserPublicProfileResponse> {
-    const user = await this.userRepository.findOneBy({ id });
-    if (!user) throw new NotFoundException('Пользователь не найден');
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...result } = user;
-    return result;
+  async findById(
+    id: number,
+    password = false,
+  ): Promise<UserPublicProfileResponse> {
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .addSelect(password ? 'user.password' : '')
+      .where('user.id = :id', { id })
+      .getOne();
+    // findOneBy({ id });
+    // if (!user) throw new NotFoundException('Пользователь не найден');
+    //  eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // const { password, ...result } = user;
+    return user;
   }
 
   async create(createUserDto: CreateUserDto) {
@@ -43,8 +51,13 @@ export class UsersService {
     return this.userRepository.find();
   }
 
-  async findByName(username: string) {
-    return await this.userRepository.findOneBy({ username });
+  async findByName(username: string, password = false) {
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .addSelect(password ? 'user.password' : '')
+      .where('user.username = :username', { username })
+      .getOne();
+    return user;
   }
 
   async findOne(query: FindOneOptions<User>): Promise<User> {

@@ -5,7 +5,6 @@ import {
   Body,
   Patch,
   Param,
-  Delete,
   Req,
   NotFoundException,
   UseGuards,
@@ -27,7 +26,7 @@ export class UsersController {
 
   // CRUD из Swagger
   @Get('me')
-  async me(@Req() req): Promise<UserPublicProfileResponse> {
+  async me(@Req() req) {
     return await this.usersService.findById(req.user.id);
   }
 
@@ -35,7 +34,7 @@ export class UsersController {
   async updateMe(
     @Req() req,
     @Body() updateUserDto: UpdateUserDto,
-  ): Promise<UpdateUserDto> {
+  ): Promise<UserPublicProfileResponse> {
     await this.usersService.update(req.user.id, updateUserDto);
     const user = await this.usersService.findByName(req.user.username);
 
@@ -46,8 +45,8 @@ export class UsersController {
   }
 
   @Get('me/wishes')
-  findWishesId(@Req() req) {
-    return this.wishesService.findWishes(req.user.id);
+  async findWishesId(@Req() req) {
+    return await this.wishesService.findWishes(req.user.id);
   }
 
   @Get(':username')

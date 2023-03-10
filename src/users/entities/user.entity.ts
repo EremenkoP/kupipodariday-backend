@@ -23,7 +23,7 @@ export class User extends PrimaryEntities {
   @IsEmail()
   email: string;
 
-  @Column()
+  @Column({ select: false })
   @IsNotEmpty()
   password: string;
 

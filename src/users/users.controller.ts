@@ -15,6 +15,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { WishesService } from 'src/wishes/wishes.service';
 import { UserPublicProfileResponse } from './dto/userProfileResponse.dto';
 import { JwtAuthGuard } from 'src/auth/jwtAuth.guard';
+import { Wish } from 'src/wishes/entities/wish.entity';
 
 @UseGuards(JwtAuthGuard)
 @Controller('users')
@@ -40,17 +41,19 @@ export class UsersController {
 
     if (!user) throw new NotFoundException('Пользователь не найден');
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { id, createdAt, updatedAt, password, ...result } = user;
+    const { password, ...result } = user;
     return result;
   }
 
   @Get('me/wishes')
-  async findWishesId(@Req() req) {
+  async findWishesId(@Req() req): Promise<Wish[]> {
     return await this.wishesService.findWishes(req.user.id);
   }
 
   @Get(':username')
-  async findUserByName(@Param('username') username: string) {
+  async findUserByName(
+    @Param('username') username: string,
+  ): Promise<UserPublicProfileResponse> {
     const user = await this.usersService.findByName(username);
 
     if (!user) throw new NotFoundException('Пользователь не найден');

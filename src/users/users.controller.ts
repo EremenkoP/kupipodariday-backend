@@ -36,7 +36,7 @@ export class UsersController {
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<UserPublicProfileResponse> {
     await this.usersService.update(req.user.id, updateUserDto);
-    const user = await this.usersService.findByName(req.user.username);
+    const user = await this.usersService.findById(req.user.id);
 
     if (!user) throw new NotFoundException('Пользователь не найден');
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

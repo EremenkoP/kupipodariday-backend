@@ -13,8 +13,7 @@ export class AuthController {
 
   @Post('signup')
   async signup(@Body() createUserDto: CreateUserDto) {
-    const user = await this.usersService.create(createUserDto);
-    return this.authService.login(user);
+    return await this.usersService.create(createUserDto);
   }
 
   @UseGuards(LocalAuthGuard)

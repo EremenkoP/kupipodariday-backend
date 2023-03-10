@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOneOptions, Repository } from 'typeorm';
+import { FindOneOptions, Not, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -31,10 +31,6 @@ export class UsersService {
       .addSelect(password ? 'user.password' : '')
       .where('user.id = :id', { id })
       .getOne();
-    // findOneBy({ id });
-    // if (!user) throw new NotFoundException('Пользователь не найден');
-    //  eslint-disable-next-line @typescript-eslint/no-unused-vars
-    // const { password, ...result } = user;
     return user;
   }
 
@@ -44,7 +40,10 @@ export class UsersService {
       ...createUserDto,
       password: hash,
     });
-    return this.userRepository.save(createdUser);
+    const { password, ...newUser } = await this.userRepository.save(
+      createdUser,
+    );
+    return newUser;
   }
 
   async findAll(): Promise<User[]> {
@@ -66,19 +65,25 @@ export class UsersService {
 
   async update(id: number, updateUserDto: UpdateUserDto) {
     const { username, email } = updateUserDto;
+    // проверка на наличии в базе совпадений имени и почты
     const isExist = (await this.findOne({
       where: [{ email }, { username }],
     }))
-      ? false
-      : true;
-    if (isExist)
+      ? true
+      : false;
+    if (isExist) {
+      console.log(2);
       throw new ConflictException(
-        'Пользователь с таким email или username не существует',
+        'Пользователь с таким email или username уже существует',
       );
-
-    const user = await this.userRepository.findOneBy({ id });
-    if (!user) throw new NotFoundException('Пользователь не найден');
-
+    }
+    // нахождение пользователя для изменения
+    const user = await this.findById(id, true);
+    if (!user) {
+      console.log(1);
+      throw new NotFoundException('Пользователь не найден');
+    }
+    // работа с паролем
     let password: string;
     if (updateUserDto.password) {
       password = await bcrypt.hash(updateUserDto.password, 10);

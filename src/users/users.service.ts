@@ -10,6 +10,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserPublicProfileResponse } from './dto/userProfileResponse.dto';
 import { User } from './entities/user.entity';
+import { Console } from 'console';
 
 @Injectable()
 export class UsersService {
@@ -67,23 +68,27 @@ export class UsersService {
 
   async update(id: number, updateUserDto: UpdateUserDto) {
     const { username, email } = updateUserDto;
+    // нахождение пользователя для изменения
+    const user = await this.findById(id, true);
+    if (!user) {
+      throw new NotFoundException('Пользователь не найден');
+    }
     // проверка на наличии в базе совпадений имени и почты
+    const emailValid = updateUserDto.email
+      ? { email, username: Not(user.username) }
+      : { email };
+    const usernameValid = updateUserDto.username
+      ? { username, email: Not(user.email) }
+      : { username };
     const isExist = (await this.findOne({
-      where: [{ email }, { username }],
+      where: [emailValid, usernameValid],
     }))
       ? true
       : false;
     if (isExist) {
-      console.log(2);
       throw new ConflictException(
         'Пользователь с таким email или username уже существует',
       );
-    }
-    // нахождение пользователя для изменения
-    const user = await this.findById(id, true);
-    if (!user) {
-      console.log(1);
-      throw new NotFoundException('Пользователь не найден');
     }
     // работа с паролем
     let password: string;
